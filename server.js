@@ -617,6 +617,17 @@ bot.on('photo', function(msg) {
 
     // ADMINGA YUBORISH
 
+bot.on('photo', function(msg) {
+
+    bot.sendMessage(
+
+        msg.chat.id,
+
+        '✅ Screenshot qabul qilindi!\n\n' +
+        '⏳ Admin tekshiradi.'
+
+    );
+
     bot.sendPhoto(
 
         msg.chat.id,
@@ -624,13 +635,16 @@ bot.on('photo', function(msg) {
         msg.photo[msg.photo.length - 1].file_id,
 
         {
-            caption:
 
+            caption:
             '💳 YANGI TO‘LOV\n\n' +
 
-            '👤 User:\n@' + msg.from.username +
+            '👤 User:\n@' +
+            msg.from.username +
 
-'\n\n🆔 ID:\n' + msg.from.id
+            '\n\n🆔 ID:\n' +
+            msg.from.id
+
         }
 
     );
