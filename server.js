@@ -4,6 +4,15 @@ const fs = require('fs');
 
 let users = [];
 let referrals = {};
+let userStep = {};
+let orders = [];
+if(fs.existsSync('orders.json')) {
+
+    orders = JSON.parse(
+        fs.readFileSync('orders.json')
+    );
+
+}
 if(fs.existsSync('users.json')) {
 
     users = JSON.parse(
@@ -246,5 +255,75 @@ bot.onText(/\/ref/, function(msg) {
         count
 
     );
+
+});
+bot.on('message', function(msg) {
+
+    if(msg.text === '🎵 TikTok') {
+
+        userStep[msg.chat.id] = 'tiktok_link';
+
+        bot.sendMessage(
+
+            msg.chat.id,
+
+            '🔗 TikTok link yuboring'
+
+        );
+
+    }
+
+});
+bot.on('message', function(msg) {
+
+    if(userStep[msg.chat.id] === 'tiktok_link') {
+
+        userStep[msg.chat.id] = 'tiktok_count';
+
+        orders[msg.chat.id] = {
+            link: msg.text
+        };
+
+        bot.sendMessage(
+
+            msg.chat.id,
+
+            '📦 Miqdorni kiriting'
+
+        );
+
+    }
+
+});
+bot.on('message', function(msg) {
+
+    if(userStep[msg.chat.id] === 'tiktok_count') {
+
+        const count = msg.text;
+
+        orders[msg.chat.id].count = count;
+
+        fs.writeFileSync(
+            'orders.json',
+            JSON.stringify(orders)
+        );
+
+        userStep[msg.chat.id] = null;
+
+        bot.sendMessage(
+
+            msg.chat.id,
+
+            '✅ Buyurtma qabul qilindi!\n\n' +
+
+            '🔗 Link:\n' +
+            orders[msg.chat.id].link +
+
+            '\n\n📦 Miqdor:\n' +
+            count
+
+        );
+
+    }
 
 });
