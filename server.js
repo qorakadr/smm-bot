@@ -9,12 +9,43 @@ let referrals = {};
 let userStep = {};
 let orders = {};
 let balances = {};
+let stats = { users: 0, orders: 0, income: 0 };
 
 // ⚙️ ASOSIY SOZLAMALAR
 const CARD_NUMBER = '9860350144650842';
 const CARD_NAME = 'ODILJON OCHILOV';
 const ADMIN_USERNAME = 'SMM_adminMAX';
-const REQUIRED_CHANNEL = '@xabarlar24uzbekiston';
+const ADMIN_ID = 123456789; // ⚠️ O'zingizning ID raqamingizni yozing
+const REQUIRED_CHANNEL = '@xabarlar24uzbekiston
+
+// 💳 TO'LOV TIZIMLARI SOZLAMALARI
+const PAYMENT_SYSTEMS = {
+    click: {
+        name: "Click",
+        merchant_id: "12345",
+        service_id: "67890",
+        secret_key: "maxfiy_kalit",
+        enabled: true
+    },
+    payme: {
+        name: "Payme",
+        merchant_id: "555555",
+        secret_key: "payme_maxfiy_kalit",
+        enabled: true
+    },
+    uzum: {
+        name: "Uzum Bank",
+        merchant_id: "uzum_merchant",
+        secret_key: "uzum_kalit",
+        enabled: true
+    },
+    paynet: {
+        name: "Paynet",
+        merchant_id: "paynet_merchant",
+        secret_key: "paynet_kalit",
+        enabled: true
+    }
+};
 
 // ⚡️ KIRISH MATNI
 const WELCOME_TEXT = `⚡️ ASSALOM ALAYKUM!
@@ -105,6 +136,7 @@ if (fs.existsSync('orders.json')) try { orders = JSON.parse(fs.readFileSync('ord
 if (fs.existsSync('users.json')) try { users = JSON.parse(fs.readFileSync('users.json', 'utf8')); } catch(e){}
 if (fs.existsSync('referrals.json')) try { referrals = JSON.parse(fs.readFileSync('referrals.json', 'utf8')); } catch(e){}
 if (fs.existsSync('balances.json')) try { balances = JSON.parse(fs.readFileSync('balances.json', 'utf8')); } catch(e){}
+if (fs.existsSync('stats.json')) try { stats = JSON.parse(fs.readFileSync('stats.json', 'utf8')); } catch(e){}
 
 // 🤖 Bot ishga tushirish
 const token = '8846788193:AAFmm2yAzhS4KCdNr_pkl8ikq9ObCGkGFPI';
@@ -118,14 +150,15 @@ async function checkSubscription(userId) {
     } catch { return false; }
 }
 
-// 📋 Asosiy menyu — CHIROYLI JOYLASHTIRILGAN
+// 📋 Asosiy menyu
 function sendMainMenu(chatId) {
     bot.sendMessage(chatId, WELCOME_TEXT, {
         reply_markup: {
             keyboard: [
                 ['📱 Raqam olish', '🛒 SMM Xizmatlar'],
                 ['💳 Mening hisobim', '📦 Buyurtmalarim'],
-                ['💰 Hisobni to‘ldirish', '🔗 Referal havola']
+                ['💰 Hisobni to‘ldirish', '🔗 Referal havola'],
+                ['👤 Admin panel']
             ],
             resize_keyboard: true
         }
@@ -145,8 +178,10 @@ bot.onText(/\/start/, async (msg) => {
     if (!users.includes(userId)) {
         users.push(userId);
         balances[userId] = balances[userId] || 0;
+        stats.users += 1;
         fs.writeFileSync('users.json', JSON.stringify(users,null,2));
         fs.writeFileSync('balances.json', JSON.stringify(balances,null,2));
+        fs.writeFileSync('stats.json', JSON.stringify(stats,null,2));
         if (refId && refId!=userId) { referrals[refId]=(referrals[refId]||0)+1; fs.writeFileSync('referrals.json', JSON.stringify(referrals,null,2)); }
     }
     sendMainMenu(chatId);
@@ -170,7 +205,43 @@ bot.onText(/\/subbalans (\d+) (\d+)/, (msg, match) => {
     fs.writeFileSync('balances.json', JSON.stringify(balances,null,2));
     bot.sendMessage(msg.chat.id, `➖ ${uid} dan ${sum} so'm yechildi. Qoldi: ${balances[uid]}`);
 });
+bot.onText(/\/narx (.+) (.+)/, (msg, match) => {
+    if (msg.from.username !== ADMIN_USERNAME) return;
+    const tur = match[1];
+    const yangiNarx = parseInt(match[2]);
+    if(tur === 'raqam') { PRICE = yangiNarx; fs.writeFileSync('narx.json', JSON.stringify({price:PRICE})); bot.sendMessage(msg.chat.id, `✅ Raqam narxi ${yangiNarx} so'm qilib o'zgartirildi!`); }
+});
+bot.onText(/\/xabar (.+)/, (msg, match) => {
+    if (msg.from.username !== ADMIN_USERNAME) return;
+    const xabar = match[1];
+    users.forEach(u => bot.sendMessage(u, `📢 YANGILIK:\n\n${xabar}`).catch(()=>{}));
+    bot.sendMessage(msg.chat.id, `✅ Xabar barchaga yuborildi!`);
+});
+bot.onText(/\/statistika/, (msg) => {
+    if (msg.from.username !== ADMIN_USERNAME) return;
+    bot.sendMessage(msg.chat.id, `📊 BOT STATISTIKASI:\n\n👤 Foydalanuvchilar: ${stats.users}\n📦 Buyurtmalar: ${stats.orders}\n💸 Jami tushum: ${stats.income} so'm`);
+});
 bot.onText(/\/getid/, msg => bot.sendMessage(msg.chat.id, `🆔 Sizning ID: ${msg.from.id}`));
+
+// 💳 TO'LOV TIZIMLARI FUNKSIYALARI
+async function createPayment(type, amount, userId) {
+    try {
+        let link = '';
+        if(type === 'click') {
+            link = `https://click.uz/pay?service_id=${PAYMENT_SYSTEMS.click.service_id}&merchant_id=${PAYMENT_SYSTEMS.click.merchant_id}&amount=${amount}&transaction_id=${userId}_${Date.now()}`;
+        }
+        if(type === 'payme') {
+            link = `https://payme.uz/merchant/${PAYMENT_SYSTEMS.payme.merchant_id}/pay?amount=${amount*100}&account[user_id]=${userId}`;
+        }
+        if(type === 'uzum') {
+            link = `https://uzumbank.uz/pay/${PAYMENT_SYSTEMS.uzum.merchant_id}?amount=${amount}&user=${userId}`;
+        }
+        if(type === 'paynet') {
+            link = `https://paynet.uz/pay?service=${PAYMENT_SYSTEMS.paynet.merchant_id}&amount=${amount}&user=${userId}`;
+        }
+        return link;
+    } catch (e) { return null; }
+}
 
 // 📩 XABARLARNI QAYTA ISHLASH
 bot.on('message', async (msg) => {
@@ -186,6 +257,11 @@ bot.on('message', async (msg) => {
     if (text === '🔙 Orqaga') {
         sendMainMenu(chatId);
         return;
+    }
+
+    // 👤 ADMIN PANEL
+    if (text === '👤 Admin panel' && msg.from.username === ADMIN_USERNAME) {
+        return bot.sendMessage(chatId, `👨‍💻 ADMIN BOSHQARUVI\n\nBuyruqlar:\n/addbalans [id] [sum] - Balans qo'shish\n/subbalans [id] [sum] - Balansdan yechish\n/narx raqam [sum] - Raqam narxini o'zgartirish\n/xabar [matn] - Hammaga xabar yuborish\n/statistika - Bot hisoboti`, {reply_markup:{keyboard:[['🔙 Orqaga']],resize_keyboard:true}});
     }
 
     // 📱 RAQAM OLISH — DAVLATLAR RAQAM BILAN
@@ -209,11 +285,14 @@ bot.on('message', async (msg) => {
 
         // Balansni tekshirish
         if ((balances[userId] || 0) < PRICE) 
-            return bot.sendMessage(chatId, `❌ Hisobingizda mablag' yetarli emas!\n💳 Balans: ${balances[userId] || 0} so'm\n💸 Narx: ${PRICE} so'm`);
+            return bot.sendMessage(chatId, `❌ Hisobingizda mablag' yetarli emas!\n💳 Balans: ${balances[userId] || 0} so'm\n💸 Narx: ${PRICE} so'm\n\n💰 Avval hisobni to'ldiring`);
 
         // Pulni yechish
         balances[userId] -= PRICE;
+        stats.income += PRICE;
+        stats.orders += 1;
         fs.writeFileSync('balances.json', JSON.stringify(balances, null, 2));
+        fs.writeFileSync('stats.json', JSON.stringify(stats, null, 2));
 
         bot.sendMessage(chatId, `✅ Davlat tanlandi: ${selectedCountry.flag} ${selectedCountry.name}\n⏳ Raqam olinmoqda...`);
 
@@ -236,13 +315,19 @@ bot.on('message', async (msg) => {
                 return bot.sendMessage(chatId, `✅ RAQAM MUVAFFAQIYATLI OLINDI!\n\n📱 Raqam: +${num}\n⏳ Kod kelishini kuting (20 daqiqa)\n\n🔄 Kod kelganda shu yerda ko'rinadi:\n🔙 Orqaga qaytish uchun "🔙 Orqaga" deb yozing`);
             } else {
                 balances[userId] += PRICE;
+                stats.income -= PRICE;
+                stats.orders -= 1;
                 fs.writeFileSync('balances.json', JSON.stringify(balances, null, 2));
+                fs.writeFileSync('stats.json', JSON.stringify(stats, null, 2));
                 return bot.sendMessage(chatId, `❌ Xatolik: ${res.data.message || 'Noma\'lum xato'}\n💰 Pul hisobingizga qaytarildi.`);
             }
 
         } catch (err) {
             balances[userId] += PRICE;
+            stats.income -= PRICE;
+            stats.orders -= 1;
             fs.writeFileSync('balances.json', JSON.stringify(balances, null, 2));
+            fs.writeFileSync('stats.json', JSON.stringify(stats, null, 2));
             return bot.sendMessage(chatId, `❌ Ulanishda xatolik: ${err.response?.data?.message || 'Sayt javob bermayapti'}\n💰 Pul qaytarildi.`);
         }
     }
@@ -263,6 +348,52 @@ bot.on('message', async (msg) => {
             }
         } catch {}
         return;
+    }
+
+    // 💰 HISOBNI TO'LDIRISH
+    if (text === '💰 Hisobni to‘ldirish') {
+        userStep[chatId] = { step: 'summa_kiritish' };
+        return bot.sendMessage(chatId, `💰 HISOBNI TO'LDIRISH\n\nQancha so'm kiritmoqchisiz?\nMasalan: 10000, 20000, 50000\n\n✍️ Faqat raqam yozing\n🔙 Orqaga: "🔙 Orqaga"`);
+    }
+
+    if(userStep[chatId]?.step === 'summa_kiritish') {
+        const summa = parseInt(text);
+        if(isNaN(summa) || summa < 1000) return bot.sendMessage(chatId, `❌ Noto'g'ri summa! Eng kamida 1000 so'm kiriting`);
+        
+        userStep[chatId] = { step: 'tolov_tanlash', summa: summa };
+        return bot.sendMessage(chatId, `💳 TO'LOV TIZIMINI TANLANG\n\nSumma: ${summa} so'm\n\nQuyidagilardan birini tanlang:`, {
+            reply_markup: {
+                keyboard: [
+                    ['💳 Click', '🟢 Payme'],
+                    ['🟡 Uzum Bank', '🔵 Paynet'],
+                    ['💧 Kartaga o'tkazish', '🔙 Orqaga']
+                ],
+                resize_keyboard: true
+            }
+        });
+    }
+
+    if(userStep[chatId]?.step === 'tolov_tanlash') {
+        const summa = userStep[chatId].summa;
+        if(text === '💳 Click') {
+            const link = await createPayment('click', summa, userId);
+            return bot.sendMessage(chatId, `✅ Click orqali to'lov\n\nSumma: ${summa} so'm\n👉 To'lov uchun: ${link}\n\n✅ To'lov qilingach, hisobingiz avtomatik to'ldiriladi!`);
+        }
+        if(text === '🟢 Payme') {
+            const link = await createPayment('payme', summa, userId);
+            return bot.sendMessage(chatId, `✅ Payme orqali to'lov\n\nSumma: ${summa} so'm\n👉 To'lov uchun: ${link}\n\n✅ To'lov qilingach, hisobingiz avtomatik to'ldiriladi!`);
+        }
+        if(text === '🟡 Uzum Bank') {
+            const link = await createPayment('uzum', summa, userId);
+            return bot.sendMessage(chatId, `✅ Uzum Bank orqali to'lov\n\nSumma: ${summa} so'm\n👉 To'lov uchun: ${link}\n\n✅ To'lov qilingach, hisobingiz avtomatik to'ldiriladi!`);
+        }
+        if(text === '🔵 Paynet') {
+            const link = await createPayment('paynet', summa, userId);
+            return bot.sendMessage(chatId, `✅ Paynet orqali to'lov\n\nSumma: ${summa} so'm\n👉 To'lov uchun: ${link}\n\n✅ To'lov qilingach, hisobingiz avtomatik to'ldiriladi!`);
+        }
+        if(text === '💧 Kartaga o'tkazish') {
+            return bot.sendMessage(chatId, `💳 KARTA ORQALI TO'LOV\n\nSumma: ${summa} so'm\n\n💳 Karta: ${CARD_NUMBER}\n👤 Ism: ${CARD_NAME}\n\n📑 To'lovdan so'ng chekni shu yerga yuboring\n✅ Admin tasdiqlagach pul tushadi`);
+        }
     }
 
     // 🛒 SMM XIZMATLAR
@@ -364,18 +495,6 @@ bot.on('message', async (msg) => {
             }
         }
         return bot.sendMessage(chatId, hasOrders ? myOrdersText + '🔙 Orqaga: "🔙 Orqaga"' : '❌ Sizda hozircha buyurtmalar yo\'q\n🔙 Orqaga: "🔙 Orqaga"');
-    }
-
-    if (text === '💰 Hisobni to‘ldirish') {
-        return bot.sendMessage(chatId, 
-            '💰 HISOBNI TO‘LDIRISH\n\n' +
-            'To\'lov quyidagi karta orqali amalga oshiring:\n\n' +
-            `💳 Karta: ${CARD_NUMBER}\n` +
-            `👤 Ism: ${CARD_NAME}\n\n` +
-            '📑 To\'lovdan so\'ng chekni yuboring.\n' +
-            '✅ Admin tasdiqlagach, pul hisobingizga tushadi.\n' +
-            '🔙 Orqaga qaytish uchun "🔙 Orqaga"'
-        );
     }
 
     if (text === '🔗 Referal havola') {
