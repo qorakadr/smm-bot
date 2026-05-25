@@ -127,38 +127,13 @@ fs.writeFileSync(
 
     {
 
-        caption:
-
-`🔥 ASSALOMU ALAYKUM!
-
-🚀 SMM ADMIN BOTGA XUSH KELIBSIZ
-
-📈 ENG SIFATLI XIZMATLAR:
-• TikTok
-• Instagram
-• Telegram
-• YouTube
-
-⚡ TEZKOR BUYURTMA
-💎 SIFATLI XIZMAT
-🛡 ISHONCHLI SERVIS
-
-👨‍💻 ADMIN:
-@SMM_adminMAX
-
-📞 +998(93)409-06-06`,
+        caption: '🔥 SMM ADMIN BOT',
 
         reply_markup: {
 
             keyboard: [
 
-                ['📱 TikTok', '📸 Instagram'],
-
-                ['📢 Telegram', '▶️ YouTube'],
-
-                ['👤 Profil', '👥 Referal'],
-
-                ['📞 Admin']
+                ['🎵 TikTok', '📸 Instagram']
 
             ],
 
