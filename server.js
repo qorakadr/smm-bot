@@ -14,7 +14,7 @@ let balances = {};
 const CARD_NUMBER = '9860350144650842';
 const CARD_NAME = 'ODILJON OCHILOV';
 const ADMIN_USERNAME = 'SMM_adminMAX';
-const REQUIRED_CHANNEL = '@SMM_adminMAX';
+const REQUIRED_CHANNEL = '@xabarlar24uzbekiston';
 
 // ⚡️ KIRISH MATNI (Siz yozgan)
 const WELCOME_TEXT = `⚡️ ASSALOM ALAYKUM!
