@@ -628,28 +628,27 @@ bot.on('photo', function(msg) {
 
     );
 
-    bot.sendPhoto(
+bot.sendMessage(
 
-        msg.chat.id,
+    chatId,
 
-        msg.photo[msg.photo.length - 1].file_id,
+    '🔥 ASSALOMU ALAYKUM!\n\n' +
 
-        {
+    'SMM ADMIN BOT ga xush kelibsiz 🚀',
 
-            caption:
-            '💳 YANGI TO‘LOV\n\n' +
+    {
+        reply_markup: {
+            keyboard: [
+                ['🎵 TikTok', '📸 Instagram'],
+                ['📢 Telegram', '▶️ YouTube'],
+                ['👨‍💻 Admin']
+            ],
 
-            '👤 User:\n@' +
-            msg.from.username +
-
-            '\n\n🆔 ID:\n' +
-            msg.from.id
-
+            resize_keyboard: true
         }
+    }
 
-    );
-
-});
+);
 // ======================
 // ACCEPT PAYMENT
 // ======================
