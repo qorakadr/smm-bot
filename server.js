@@ -14,7 +14,7 @@ let balances = {};
 const CARD_NUMBER = '9860350144650842';
 const CARD_NAME = 'ODILJON OCHILOV';
 const ADMIN_USERNAME = 'SMM_adminMAX';
-const REQUIRED_CHANNEL = '@SMM_adminMAX'; // ✅ TO'G'RI KANAL
+const REQUIRED_CHANNEL = '@SMM_adminMAX';
 
 // ⚡️ KIRISH MATNI
 const WELCOME_TEXT = `⚡️ ASSALOM ALAYKUM!
@@ -30,7 +30,7 @@ Har qanday vaqtda muammolaringizni hal qilish uchun:
 👨‍💻 ADMIN: @SMM_adminMAX
 📞 Tel: +998(93)409-06-06
 
-Quyidagi tugmalardan kerakli bo'limni tanlang 👇`;
+Quyidagi bo'limlardan birini tanlang 👇`;
 
 // 📱 SMS-MAN API
 const SMS_MAN_API = {
@@ -41,29 +41,29 @@ const SMS_MAN_API = {
 // 💰 NARXLAR
 const PRICE = 5000;
 
-// 🌍 DAVLATLAR RO'YXATI
+// 🌍 DAVLATLAR — RAQAMLAR BILAN
 const COUNTRIES = [
-    { id: 'romania', name: 'Romania', flag: '🇷🇴' },
-    { id: 'zambia', name: 'Zambia', flag: '🇿🇲' },
-    { id: 'kyrgyzstan', name: 'Kyrgyzstan', flag: '🇰🇬' },
-    { id: 'ireland', name: 'Ireland', flag: '🇮🇪' },
-    { id: 'uzbekistan', name: 'Oʻzbekiston', flag: '🇺🇿' },
-    { id: 'germany', name: 'Germany', flag: '🇩🇪' },
-    { id: 'chad', name: 'Chad', flag: '🇹🇩' },
-    { id: 'thailand', name: 'Thailand', flag: '🇹🇭' },
-    { id: 'senegal', name: 'Senegal', flag: '🇸🇳' },
-    { id: 'kazakhstan', name: 'Kazakhstan', flag: '🇰🇿' },
-    { id: 'united_kingdom', name: 'United Kingdom', flag: '🇬🇧' },
-    { id: 'serbia', name: 'Serbia', flag: '🇷🇸' },
-    { id: 'yemen', name: 'Yemen', flag: '🇾🇪' },
-    { id: 'cote_d_ivoire', name: 'Côte d\'Ivoire', flag: '🇨🇮' },
-    { id: 'iraq', name: 'Iraq', flag: '🇮🇶' },
-    { id: 'honduras', name: 'Honduras', flag: '🇭🇳' },
-    { id: 'bahrain', name: 'Bahrain', flag: '🇧🇭' },
-    { id: 'benin', name: 'Benin', flag: '🇧🇯' },
-    { id: 'ecuador', name: 'Ecuador', flag: '🇪🇨' },
-    { id: 'lesotho', name: 'Lesotho', flag: '🇱🇸' },
-    { id: 'jamaica', name: 'Jamaica', flag: '🇯🇲' }
+    { id: '1', code: 'romania', name: 'Romania', flag: '🇷🇴' },
+    { id: '2', code: 'zambia', name: 'Zambia', flag: '🇿🇲' },
+    { id: '3', code: 'kyrgyzstan', name: 'Kyrgyzstan', flag: '🇰🇬' },
+    { id: '4', code: 'ireland', name: 'Ireland', flag: '🇮🇪' },
+    { id: '5', code: 'uzbekistan', name: 'Oʻzbekiston', flag: '🇺🇿' },
+    { id: '6', code: 'germany', name: 'Germany', flag: '🇩🇪' },
+    { id: '7', code: 'chad', name: 'Chad', flag: '🇹🇩' },
+    { id: '8', code: 'thailand', name: 'Thailand', flag: '🇹🇭' },
+    { id: '9', code: 'senegal', name: 'Senegal', flag: '🇸🇳' },
+    { id: '10', code: 'kazakhstan', name: 'Kazakhstan', flag: '🇰🇿' },
+    { id: '11', code: 'united_kingdom', name: 'United Kingdom', flag: '🇬🇧' },
+    { id: '12', code: 'serbia', name: 'Serbia', flag: '🇷🇸' },
+    { id: '13', code: 'yemen', name: 'Yemen', flag: '🇾🇪' },
+    { id: '14', code: 'cote_d_ivoire', name: 'Côte d\'Ivoire', flag: '🇨🇮' },
+    { id: '15', code: 'iraq', name: 'Iraq', flag: '🇮🇶' },
+    { id: '16', code: 'honduras', name: 'Honduras', flag: '🇭🇳' },
+    { id: '17', code: 'bahrain', name: 'Bahrain', flag: '🇧🇭' },
+    { id: '18', code: 'benin', name: 'Benin', flag: '🇧🇯' },
+    { id: '19', code: 'ecuador', name: 'Ecuador', flag: '🇪🇨' },
+    { id: '20', code: 'lesotho', name: 'Lesotho', flag: '🇱🇸' },
+    { id: '21', code: 'jamaica', name: 'Jamaica', flag: '🇯🇲' }
 ];
 
 // 🛒 SMM XIZMATLARI
@@ -118,17 +118,14 @@ async function checkSubscription(userId) {
     } catch { return false; }
 }
 
-// 📋 Asosiy menyu
+// 📋 Asosiy menyu — CHIROYLI JOYLASHTIRILGAN
 function sendMainMenu(chatId) {
     bot.sendMessage(chatId, WELCOME_TEXT, {
         reply_markup: {
             keyboard: [
-                ['📱 Raqam olish'],
-                ['🛒 SMM Xizmatlar'],
-                ['💳 Mening hisobim'],
-                ['📦 Buyurtmalarim'],
-                ['💰 Hisobni to‘ldirish'],
-                ['🔗 Referal havola']
+                ['📱 Raqam olish', '🛒 SMM Xizmatlar'],
+                ['💳 Mening hisobim', '📦 Buyurtmalarim'],
+                ['💰 Hisobni to‘ldirish', '🔗 Referal havola']
             ],
             resize_keyboard: true
         }
@@ -185,23 +182,32 @@ bot.on('message', async (msg) => {
     if (!await checkSubscription(userId))
         return bot.sendMessage(chatId, `❌ Avval kanalga a'zo bo'ling: ${REQUIRED_CHANNEL}`);
 
-    // 📱 RAQAM OLISH
-    if (text === '📱 Raqam olish') {
-        let list = `🌍 DAVLATLAR RO'YXATI\n\n`;
-        COUNTRIES.forEach(c => {
-            list += `${c.flag} ${c.name} — ${PRICE} so'm\n`;
-        });
-        list += `\n✍️ Davlat nomini yozing (masalan: Oʻzbekiston)`;
-        
-        userStep[chatId] = { step: 'select_country' };
-        return bot.sendMessage(chatId, list);
+    // 🔙 ORQAGA QAYTISH
+    if (text === '🔙 Orqaga') {
+        sendMainMenu(chatId);
+        return;
     }
 
-    // ✅ DAVLAT TANLANDI — DARHOL TO'LOVGA
-    if (userStep[chatId]?.step === 'select_country') {
-        const selectedCountry = COUNTRIES.find(c => c.name.toLowerCase() === text.toLowerCase().trim());
-        if (!selectedCountry) return bot.sendMessage(chatId, `❌ Bunday davlat topilmadi! Ro'yxatdan tanlang.`);
+    // 📱 RAQAM OLISH — DAVLATLAR RAQAM BILAN
+    if (text === '📱 Raqam olish') {
+        let list = `🌍 DAVLATLAR RO'YXATI\nHar bir davlatning yonidagi raqamni yozib tanlang\nNarxi: barchasi ${PRICE} so'm\n\n`;
+        COUNTRIES.forEach(c => {
+            list += `${c.id}. ${c.flag} ${c.name}\n`;
+        });
+        list += `\n✍️ Kerakli davlat raqamini yozing\n🔙 Orqaga qaytish uchun "🔙 Orqaga" deb yozing`;
+        
+        userStep[chatId] = { step: 'select_country' };
+        return bot.sendMessage(chatId, list, {
+            reply_markup: { keyboard: [['🔙 Orqaga']], resize_keyboard: true }
+        });
+    }
 
+    // ✅ DAVLAT RAQAMI KIRITILDI
+    if (userStep[chatId]?.step === 'select_country') {
+        const selectedCountry = COUNTRIES.find(c => c.id === text.trim());
+        if (!selectedCountry) return bot.sendMessage(chatId, `❌ Bunday raqam yo'q! Ro'yxatdan tanlang yoki "🔙 Orqaga" deb yozing`);
+
+        // Balansni tekshirish
         if ((balances[userId] || 0) < PRICE) 
             return bot.sendMessage(chatId, `❌ Hisobingizda mablag' yetarli emas!\n💳 Balans: ${balances[userId] || 0} so'm\n💸 Narx: ${PRICE} so'm`);
 
@@ -216,7 +222,7 @@ bot.on('message', async (msg) => {
             const res = await axios.get(`${SMS_MAN_API.URL}/get-number`, {
                 params: {
                     api_key: SMS_MAN_API.KEY,
-                    country: selectedCountry.id,
+                    country: selectedCountry.code,
                     service: 'tg'
                 }
             });
@@ -224,12 +230,14 @@ bot.on('message', async (msg) => {
             if(res.data.status === 'success') {
                 const num = res.data.number;
                 const orderId = res.data.id;
+
                 userStep[chatId] = { step: 'wait_code', orderId: orderId };
-                return bot.sendMessage(chatId, `✅ RAQAM MUVAFFAQIYATLI OLINDI!\n\n📱 Raqam: +${num}\n⏳ Kod kelishini kuting (20 daqiqa)\n\n🔄 Kod kelganda shu yerda ko'rinadi:`);
+
+                return bot.sendMessage(chatId, `✅ RAQAM MUVAFFAQIYATLI OLINDI!\n\n📱 Raqam: +${num}\n⏳ Kod kelishini kuting (20 daqiqa)\n\n🔄 Kod kelganda shu yerda ko'rinadi:\n🔙 Orqaga qaytish uchun "🔙 Orqaga" deb yozing`);
             } else {
                 balances[userId] += PRICE;
                 fs.writeFileSync('balances.json', JSON.stringify(balances, null, 2));
-                return bot.sendMessage(chatId, `❌ Xatolik: ${res.data.message || 'Noma\'lum xato'}\n💰 Pul qaytarildi.`);
+                return bot.sendMessage(chatId, `❌ Xatolik: ${res.data.message || 'Noma\'lum xato'}\n💰 Pul hisobingizga qaytarildi.`);
             }
 
         } catch (err) {
@@ -248,6 +256,7 @@ bot.on('message', async (msg) => {
                     id: userStep[chatId].orderId
                 }
             });
+
             if(res.data.status === 'success' && res.data.code) {
                 bot.sendMessage(chatId, `📩 KOD KELDI!\n\n🔑 Kod: ${res.data.code}\n\n✅ Ishlatib bo'lgach tugatiling.`);
                 delete userStep[chatId];
@@ -259,28 +268,32 @@ bot.on('message', async (msg) => {
     // 🛒 SMM XIZMATLAR
     if (text === '🛒 SMM Xizmatlar') 
         return bot.sendMessage(chatId, '👇 Quyidagi platformalardan birini tanlang:', { 
-            reply_markup:{keyboard:[['🎵 TikTok','📸 Instagram'],['📢 Telegram','▶️ YouTube'],['🔙 Asosiy menyu']],resize_keyboard:true}
+            reply_markup:{keyboard:[
+                ['🎵 TikTok', '📸 Instagram'],
+                ['📢 Telegram', '▶️ YouTube'],
+                ['🔙 Orqaga']
+            ],resize_keyboard:true}
         });
 
     if (text === '🎵 TikTok') { 
         userStep[chatId]={step:'sel_serv',cat:'tiktok'}; 
         let l=SERVICES.tiktok.list.map(x=>x.name).join('\n'); 
-        return bot.sendMessage(chatId,`📋 ${SERVICES.tiktok.title}\n\n${l}\n\n✍️ Xizmat raqamini yozing:`); 
+        return bot.sendMessage(chatId,`📋 ${SERVICES.tiktok.title}\n\n${l}\n\n✍️ Xizmat raqamini yozing\n🔙 Orqaga qaytish uchun "🔙 Orqaga"`); 
     }
     if (text === '📸 Instagram') { 
         userStep[chatId]={step:'sel_serv',cat:'instagram'}; 
         let l=SERVICES.instagram.list.map(x=>x.name).join('\n'); 
-        return bot.sendMessage(chatId,`📋 ${SERVICES.instagram.title}\n\n${l}\n\n✍️ Xizmat raqamini yozing:`); 
+        return bot.sendMessage(chatId,`📋 ${SERVICES.instagram.title}\n\n${l}\n\n✍️ Xizmat raqamini yozing\n🔙 Orqaga qaytish uchun "🔙 Orqaga"`); 
     }
     if (text === '📢 Telegram') { 
         userStep[chatId]={step:'sel_serv',cat:'telegram'}; 
         let l=SERVICES.telegram.list.map(x=>x.name).join('\n'); 
-        return bot.sendMessage(chatId,`📋 ${SERVICES.telegram.title}\n\n${l}\n\n✍️ Xizmat raqamini yozing:`); 
+        return bot.sendMessage(chatId,`📋 ${SERVICES.telegram.title}\n\n${l}\n\n✍️ Xizmat raqamini yozing\n🔙 Orqaga qaytish uchun "🔙 Orqaga"`); 
     }
     if (text === '▶️ YouTube') { 
         userStep[chatId]={step:'sel_serv',cat:'youtube'}; 
         let l=SERVICES.youtube.list.map(x=>x.name).join('\n'); 
-        return bot.sendMessage(chatId,`📋 ${SERVICES.youtube.title}\n\n${l}\n\n✍️ Xizmat raqamini yozing:`); 
+        return bot.sendMessage(chatId,`📋 ${SERVICES.youtube.title}\n\n${l}\n\n✍️ Xizmat raqamini yozing\n🔙 Orqaga qaytish uchun "🔙 Orqaga"`); 
     }
 
     // Xizmat tanlash -> Link -> Miqdor
@@ -294,13 +307,13 @@ bot.on('message', async (msg) => {
         
         step.service = cat.list[num];
         step.step = 'send_link';
-        return bot.sendMessage(chatId, `✅ Tanlandi: ${step.service.name}\n\n🔗 Havolani yuboring:`);
+        return bot.sendMessage(chatId, `✅ Tanlandi: ${step.service.name}\n\n🔗 Havolani yuboring\n🔙 Orqaga: "🔙 Orqaga"`);
     }
 
     if (step.step === 'send_link') {
         step.link = text;
         step.step = 'send_count';
-        return bot.sendMessage(chatId, `🔗 Qabul qilindi.\n\n📦 Nechta kerak? Miqdorni kiriting:\n💳 Narx: 1000 = ${step.service.price} so'm`);
+        return bot.sendMessage(chatId, `🔗 Qabul qilindi.\n\n📦 Nechta kerak? Miqdorni kiriting:\n💳 Narx: 1000 = ${step.service.price} so'm\n🔙 Orqaga: "🔙 Orqaga"`);
     }
 
     if (step.step === 'send_count') {
@@ -326,7 +339,7 @@ bot.on('message', async (msg) => {
             `✅ Buyurtma qabul qilindi!\n\n` +
             `📋 Xizmat: ${step.service.name}\n📦 Miqdor: ${cnt}\n💸 Jami: ${sum} so'm\n\n` +
             `To'lov usulini tanlang:`,
-            { reply_markup: { keyboard: [ [ '💳 Kartaga to‘lov' ], [ '💰 Balansdan yechish' ], [ '🔙 Asosiy menyu' ] ], resize_keyboard: true } }
+            { reply_markup: { keyboard: [ [ '💳 Kartaga to‘lov' ], [ '💰 Balansdan yechish' ], [ '🔙 Orqaga' ] ], resize_keyboard: true } }
         );
     }
 
@@ -337,7 +350,7 @@ bot.on('message', async (msg) => {
             '💳 SIZNING HISOBINGIZ\n\n' +
             `🆔 ID: ${userId}\n` +
             `💰 Mavjud balans: ${balans} so'm\n\n` +
-            'Hisobni to\'ldirish uchun "Hisobni to\'ldirish" tugmasini bosing.'
+            '🔙 Orqaga qaytish uchun "🔙 Orqaga"'
         );
     }
 
@@ -350,7 +363,7 @@ bot.on('message', async (msg) => {
                 hasOrders = true;
             }
         }
-        return bot.sendMessage(chatId, hasOrders ? myOrdersText : '❌ Sizda hozircha buyurtmalar yo\'q');
+        return bot.sendMessage(chatId, hasOrders ? myOrdersText + '🔙 Orqaga: "🔙 Orqaga"' : '❌ Sizda hozircha buyurtmalar yo\'q\n🔙 Orqaga: "🔙 Orqaga"');
     }
 
     if (text === '💰 Hisobni to‘ldirish') {
@@ -360,7 +373,8 @@ bot.on('message', async (msg) => {
             `💳 Karta: ${CARD_NUMBER}\n` +
             `👤 Ism: ${CARD_NAME}\n\n` +
             '📑 To\'lovdan so\'ng chekni yuboring.\n' +
-            '✅ Admin tasdiqlagach, pul hisobingizga tushadi.'
+            '✅ Admin tasdiqlagach, pul hisobingizga tushadi.\n' +
+            '🔙 Orqaga qaytish uchun "🔙 Orqaga"'
         );
     }
 
@@ -370,17 +384,13 @@ bot.on('message', async (msg) => {
         return bot.sendMessage(chatId,
             '🔗 REFERAL HAVOLA\n\n' +
             '🔗 Havola: ' + link + '\n' +
-            '👤 Taklif qilinganlar: ' + count + ' ta'
+            '👤 Taklif qilinganlar: ' + count + ' ta\n' +
+            '🔙 Orqaga qaytish uchun "🔙 Orqaga"'
         );
-    }
-
-    if (text === '🔙 Asosiy menyu') {
-        sendMainMenu(chatId);
-        return;
     }
 });
 
-// ✅ Render.com uchun maxsus server (port xatoligi chiqmaydi)
+// ✅ Render.com uchun server
 http.createServer((req, res) => {
     res.write('Bot ishlamoqda ✅');
     res.end();
