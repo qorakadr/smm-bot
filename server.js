@@ -119,7 +119,57 @@ fs.writeFileSync(
             member.status === 'kicked'
         ) {
 
-            return bot.sendMessage(
+            bot.sendPhoto(
+
+    chatId,
+
+    'logo.jpg',
+
+    {
+
+        caption:
+
+`🔥 ASSALOMU ALAYKUM!
+
+🚀 SMM ADMIN BOTGA XUSH KELIBSIZ
+
+📈 ENG SIFATLI XIZMATLAR:
+• TikTok
+• Instagram
+• Telegram
+• YouTube
+
+⚡ TEZKOR BUYURTMA
+💎 SIFATLI XIZMAT
+🛡 ISHONCHLI SERVIS
+
+👨‍💻 ADMIN:
+@SMM_adminMAX
+
+📞 +998(93)409-06-06`,
+
+        reply_markup: {
+
+            keyboard: [
+
+                ['📱 TikTok', '📸 Instagram'],
+
+                ['📢 Telegram', '▶️ YouTube'],
+
+                ['👤 Profil', '👥 Referal'],
+
+                ['📞 Admin']
+
+            ],
+
+            resize_keyboard: true
+
+        }
+
+    }
+
+);
+                
 
                 chatId,
 
