@@ -238,10 +238,39 @@ bot.on('callback_query', async function(query) {
                 userId
             );
 
-            if (
-                member.status === 'left' ||
-                member.status === 'kicked'
-            ) {
+          if (
+    member.status === 'left' ||
+    member.status === 'kicked'
+) {
+
+    return bot.sendMessage(
+
+        chatId,
+
+        '❗ Botdan foydalanish uchun kanalga obuna bo‘ling!',
+
+        {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        {
+                            text: '📢 Kanalga kirish',
+                            url: 'https://t.me/xabarlar24uzbekiston'
+                        }
+                    ],
+                    [
+                        {
+                            text: '✅ Tekshirish',
+                            callback_data: 'check_sub'
+                        }
+                    ]
+                ]
+            }
+        }
+
+    );
+
+}
 
                 return bot.answerCallbackQuery(
                     query.id,
@@ -287,33 +316,48 @@ bot.on('callback_query', async function(query) {
 // TIKTOK MENU
 // ======================
 
-bot.on('message', function(msg) {
+bot.sendPhoto(
 
-    if(msg.text === '🎵 TikTok') {
+    chatId,
 
-        bot.sendMessage(
+    'logo.jpg',
 
-            msg.chat.id,
+    {
 
-            '🎵 TikTok xizmatlari',
+        caption:
 
-            {
-                reply_markup: {
-                    keyboard: [
-                        ['👥 Followers', '❤️ Likes'],
-                        ['👁 Views', '💬 Comments'],
-                        ['⬅️ Orqaga']
-                    ],
+'🔥 ASSALOMU ALAYKUM!\n\n' +
 
-                    resize_keyboard: true
-                }
-            }
+'🚀 SMM ADMIN BOTGA XUSH KELIBSIZ\n\n' +
 
-        );
+'📈 ENG SIFATLI XIZMATLAR:\n' +
+
+'• TikTok\n' +
+'• Instagram\n' +
+'• Telegram\n' +
+'• YouTube\n\n' +
+
+'👨‍💻 ADMIN:\n@SMM_adminMAX\n\n' +
+
+'📞 +998934090606',
+
+        reply_markup: {
+
+            keyboard: [
+
+                ['🎵 TikTok', '📸 Instagram'],
+                ['📢 Telegram', '▶️ YouTube'],
+                ['👨‍💻 Admin']
+
+            ],
+
+            resize_keyboard: true
+
+        }
 
     }
 
-});
+);
 
 // ======================
 // FOLLOWERS
