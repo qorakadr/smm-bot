@@ -1,5 +1,24 @@
 const TelegramBot = require('node-telegram-bot-api');
 const http = require('http');
+const fs = require('fs');
+
+let users = [];
+let referrals = {};
+if(fs.existsSync('users.json')) {
+
+    users = JSON.parse(
+        fs.readFileSync('users.json')
+    );
+
+}
+
+if(fs.existsSync('referrals.json')) {
+
+    referrals = JSON.parse(
+        fs.readFileSync('referrals.json')
+    );
+
+}
 
 // ======================
 // TOKEN
@@ -22,6 +41,35 @@ const bot = new TelegramBot(token, {
 bot.onText(/\/start/, function(msg) {
 
     const chatId = msg.chat.id;
+    const userId = msg.from.id;
+
+const refId = msg.text.split(' ')[1];
+
+if(!users.includes(userId)) {
+
+    users.push(userId);
+
+    fs.writeFileSync(
+        'users.json',
+        JSON.stringify(users)
+    );
+
+    if(refId && refId != userId) {
+
+        if(!referrals[refId]) {
+            referrals[refId] = 0;
+        }
+
+        referrals[refId]++;
+
+        fs.writeFileSync(
+            'referrals.json',
+            JSON.stringify(referrals)
+        );
+
+    }
+
+}
 
     bot.sendMessage(
 
@@ -171,3 +219,32 @@ http.createServer(function(req, res) {
     res.end();
 
 }).listen(process.env.PORT || 3000);
+bot.onText(/\/ref/, function(msg) {
+
+    const userId = msg.from.id;
+
+    let count = 0;
+
+    if(referrals[userId]) {
+        count = referrals[userId];
+    }
+
+    const link =
+    'https://t.me/SMM_adminMAX_bot?start=' +
+    userId;
+
+    bot.sendMessage(
+
+        msg.chat.id,
+
+        '👥 REFERAL SYSTEM\n\n' +
+
+        '🔗 Linkingiz:\n' +
+        link +
+
+        '\n\n👤 Taklif qilganlar:\n' +
+        count
+
+    );
+
+});
