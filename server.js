@@ -327,3 +327,91 @@ bot.on('message', function(msg) {
     }
 
 });
+bot.onText(/\/stats/, function(msg) {
+
+    if(msg.from.username !== 'SMM_adminMAX') {
+
+        return bot.sendMessage(
+
+            msg.chat.id,
+
+            '❌ Siz admin emassiz'
+
+        );
+
+    }
+
+    bot.sendMessage(
+
+        msg.chat.id,
+
+        '📊 BOT STATISTIKASI\n\n' +
+
+        '👥 Userlar:\n' +
+        users.length + '\n\n' +
+
+        '📦 Orderlar:\n' +
+        Object.keys(orders).length
+
+    );
+
+});
+bot.onText(/\/users/, function(msg) {
+
+    if(msg.from.username !== 'SMM_adminMAX') {
+
+        return bot.sendMessage(
+
+            msg.chat.id,
+
+            '❌ Siz admin emassiz'
+
+        );
+
+    }
+
+    bot.sendMessage(
+
+        msg.chat.id,
+
+        '👥 Userlar soni:\n' +
+        users.length
+
+    );
+
+});
+bot.onText(/\/orders/, function(msg) {
+
+    if(msg.from.username !== 'SMM_adminMAX') {
+
+        return bot.sendMessage(
+
+            msg.chat.id,
+
+            '❌ Siz admin emassiz'
+
+        );
+
+    }
+
+    let text = '📦 ORDERLAR\n\n';
+
+    for(let id in orders) {
+
+        text +=
+
+        '🔗 ' + orders[id].link + '\n' +
+
+        '📦 ' + orders[id].count + '\n\n';
+
+    }
+
+    bot.sendMessage(
+
+        msg.chat.id,
+
+        text
+
+    );
+
+});
