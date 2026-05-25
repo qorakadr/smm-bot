@@ -685,3 +685,15 @@ bot.onText(/\/ref/, function(msg) {
 
 });
 console.log('🔥 SMM ADMIN BOT ISHLADI ✅');
+// ======================
+// RENDER PORT
+// ======================
+
+const http = require('http');
+
+http.createServer(function(req, res) {
+
+    res.write('SMM BOT ISHLADI');
+    res.end();
+
+}).listen(process.env.PORT || 3000);
