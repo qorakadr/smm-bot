@@ -14,9 +14,9 @@ let balances = {};
 const CARD_NUMBER = '9860350144650842';
 const CARD_NAME = 'ODILJON OCHILOV';
 const ADMIN_USERNAME = 'SMM_adminMAX';
-const REQUIRED_CHANNEL = '@xabarlar24uzbekiston';
+const REQUIRED_CHANNEL = '@SMM_adminMAX'; // ✅ TO'G'RI KANAL
 
-// ⚡️ KIRISH MATNI (Siz yozgan)
+// ⚡️ KIRISH MATNI
 const WELCOME_TEXT = `⚡️ ASSALOM ALAYKUM!
 
 Eng yaxshi xizmatlarini taqdim etuvchi bot.
@@ -32,16 +32,16 @@ Har qanday vaqtda muammolaringizni hal qilish uchun:
 
 Quyidagi tugmalardan kerakli bo'limni tanlang 👇`;
 
-// 📱 SMS-MAN API (Sizning kalitingiz)
+// 📱 SMS-MAN API
 const SMS_MAN_API = {
   KEY: 'hmmw3m9sWZmcmpnVGnW6Wo42lf7rrvs6',
   URL: 'https://sms-man.com/api/v1'
 };
 
-// 💰 NARXLAR (Hammasi 5000 so'm, keyin o'zgartirasiz)
+// 💰 NARXLAR
 const PRICE = 5000;
 
-// 🌍 DAVLATLAR RO'YXATI (Rasmdagilarning hammasi, bayrog'i + nomi)
+// 🌍 DAVLATLAR RO'YXATI
 const COUNTRIES = [
     { id: 'romania', name: 'Romania', flag: '🇷🇴' },
     { id: 'zambia', name: 'Zambia', flag: '🇿🇲' },
@@ -185,7 +185,7 @@ bot.on('message', async (msg) => {
     if (!await checkSubscription(userId))
         return bot.sendMessage(chatId, `❌ Avval kanalga a'zo bo'ling: ${REQUIRED_CHANNEL}`);
 
-    // 📱 RAQAM OLISH — DAVLATLAR RO'YXATI
+    // 📱 RAQAM OLISH
     if (text === '📱 Raqam olish') {
         let list = `🌍 DAVLATLAR RO'YXATI\n\n`;
         COUNTRIES.forEach(c => {
@@ -197,12 +197,11 @@ bot.on('message', async (msg) => {
         return bot.sendMessage(chatId, list);
     }
 
-    // ✅ DAVLAT TANLANDI — DARHOL TO'LOVGA O'TISH
+    // ✅ DAVLAT TANLANDI — DARHOL TO'LOVGA
     if (userStep[chatId]?.step === 'select_country') {
         const selectedCountry = COUNTRIES.find(c => c.name.toLowerCase() === text.toLowerCase().trim());
         if (!selectedCountry) return bot.sendMessage(chatId, `❌ Bunday davlat topilmadi! Ro'yxatdan tanlang.`);
 
-        // Balansni tekshirish
         if ((balances[userId] || 0) < PRICE) 
             return bot.sendMessage(chatId, `❌ Hisobingizda mablag' yetarli emas!\n💳 Balans: ${balances[userId] || 0} so'm\n💸 Narx: ${PRICE} so'm`);
 
@@ -218,21 +217,19 @@ bot.on('message', async (msg) => {
                 params: {
                     api_key: SMS_MAN_API.KEY,
                     country: selectedCountry.id,
-                    service: 'tg' // Telegram uchun, saytdagi kabi ajratish kerak bo'lsa o'zgartirasiz
+                    service: 'tg'
                 }
             });
 
             if(res.data.status === 'success') {
                 const num = res.data.number;
                 const orderId = res.data.id;
-
                 userStep[chatId] = { step: 'wait_code', orderId: orderId };
-
                 return bot.sendMessage(chatId, `✅ RAQAM MUVAFFAQIYATLI OLINDI!\n\n📱 Raqam: +${num}\n⏳ Kod kelishini kuting (20 daqiqa)\n\n🔄 Kod kelganda shu yerda ko'rinadi:`);
             } else {
                 balances[userId] += PRICE;
                 fs.writeFileSync('balances.json', JSON.stringify(balances, null, 2));
-                return bot.sendMessage(chatId, `❌ Xatolik: ${res.data.message || 'Noma\'lum xato'}\n💰 Pul hisobingizga qaytarildi.`);
+                return bot.sendMessage(chatId, `❌ Xatolik: ${res.data.message || 'Noma\'lum xato'}\n💰 Pul qaytarildi.`);
             }
 
         } catch (err) {
@@ -251,7 +248,6 @@ bot.on('message', async (msg) => {
                     id: userStep[chatId].orderId
                 }
             });
-
             if(res.data.status === 'success' && res.data.code) {
                 bot.sendMessage(chatId, `📩 KOD KELDI!\n\n🔑 Kod: ${res.data.code}\n\n✅ Ishlatib bo'lgach tugatiling.`);
                 delete userStep[chatId];
@@ -384,10 +380,10 @@ bot.on('message', async (msg) => {
     }
 });
 
-// Server ishga tushirish
+// ✅ Render.com uchun maxsus server (port xatoligi chiqmaydi)
 http.createServer((req, res) => {
-    res.write('SMM BOT ISHLADI ✅');
+    res.write('Bot ishlamoqda ✅');
     res.end();
-}).listen(process.env.PORT || 3000);
-
-console.log('🔥 SMM ADMIN BOT ISHLADI ✅');
+}).listen(process.env.PORT || 3000, () => {
+    console.log('🔥 Bot Render.com da ishga tushdi ✅');
+});
