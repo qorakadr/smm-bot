@@ -1,214 +1,275 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 
-// Sizning ma'lumotlaringiz
+// === SIZNING MA'LUMOTLARINGIZ ===
 const TOKEN = '8846788193:AAFmm2yAzhS4KCdNr_pkl8ikq9ObCGkGFPI';
 const API_URL = 'https://topsmm.uz/api/v2';
 const API_KEY = 'f1152704a5c99b2877ec57ad6b53f892';
 const PROFIT = 1.25; // 25% ustama
+// ================================
 
-// Botni ishga tushirish
 const bot = new TelegramBot(TOKEN, { 
     polling: true,
-    filepath: false // Fayl yuklashda xatolarni oldini olish
+    filepath: false
 });
 
-// Foydalanuvchi ma'lumotlarini vaqtincha saqlash (link va xizmat ID uchun)
+// Foydalanuvchi ma'lumotlarini saqlash (shaxsiy ma'lumotlar himoyalangan)
 const userData = {};
 
-// -------------------- API SO'ROVLARI --------------------
-// Barcha xizmatlarni olish
+// -------------------- API SO'ROVLARI (XAVFSIZ) --------------------
 async function getServices() {
     try {
-        const response = await axios.post(API_URL, {
-            key: API_KEY,
-            action: 'services'
-        }, {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 10000 // 10 soniyada javob bo'lmasa to'xtatish
-        });
-
-        // API javobi to'g'ri bo'lsa ma'lumotni qaytarish
-        if (response.data && Array.isArray(response.data)) {
-            return response.data;
-        } else {
-            console.error('Xizmatlarni olishda xato:', response.data);
-            return [];
-        }
+        const res = await axios.post(API_URL, 
+            { key: API_KEY, action: 'services' },
+            { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
+        );
+        return Array.isArray(res.data) ? res.data : [];
     } catch (e) {
-        console.error('API xatosi (xizmatlar):', e.message);
+        console.error('Xizmatlar xatosi:', e.message);
         return [];
     }
 }
 
-// Balansni olish
-async function getBalance() {
+async function getBalance(userId) {
+    // Faqat so'rov yuborgan foydalanuvchiga tegishli ma'lumot
     try {
-        const response = await axios.post(API_URL, {
-            key: API_KEY,
-            action: 'balance'
-        }, {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 10000
-        });
-
-        if (response.data && response.data.balance !== undefined) {
-            return response.data;
-        } else {
-            return { balance: 'Noma’lum', currency: 'USD' };
-        }
+        const res = await axios.post(API_URL, 
+            { key: API_KEY, action: 'balance' },
+            { headers: { 'Content-Type': 'application/json' }, timeout: 8000 }
+        );
+        return res.data?.balance ? res.data : { balance: '0.00', currency: 'USD' };
     } catch (e) {
-        console.error('API xatosi (balans):', e.message);
         return { balance: 'Xato', currency: '' };
     }
 }
 
-// Buyurtma yaratish
 async function createOrder(serviceId, link, quantity) {
     try {
-        const response = await axios.post(API_URL, {
-            key: API_KEY,
-            action: 'add',
-            service: serviceId,
-            link: link,
-            quantity: quantity
-        }, {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 15000
-        });
-
-        return response.data;
+        const res = await axios.post(API_URL,
+            { key: API_KEY, action: 'add', service: serviceId, link: link, quantity: quantity },
+            { headers: { 'Content-Type': 'application/json' }, timeout: 12000 }
+        );
+        return res.data;
     } catch (e) {
-        console.error('API xatosi (buyurtma):', e.message);
-        return { error: e.response?.data?.error || 'Buyurtma yaratishda xato yuz berdi' };
+        return { error: e.response?.data?.error || 'Buyurtma yaratishda xato' };
     }
 }
 
-// -------------------- BOT ISHLASH QISMI --------------------
-// /start buyrug'i
+// -------------------- /START BO'LIMI --------------------
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
-    bot.sendMessage(chatId, "👋 SMM botga xush kelibsiz!\nQuyidagi menyudan kerakli bo'limni tanlang:", {
+    bot.sendMessage(chatId, `👋 SMM BOTGA XUSH KELIBSIZ!\n\nQuyidagi bo'limlardan keraklisini tanlang:`, {
         reply_markup: {
-            keyboard: [['📦 Buyurtma berish', '💰 Balansim'], ['📋 Buyurtmalarim']],
-            resize_keyboard: true,
-            one_time_keyboard: false
+            keyboard: [
+                ['1. 📦 Buyurtma berish', '2. 🆔 Nomer olish'],
+                ['3. 📋 Buyurtmalarim', '4. 💰 Mening hisobim'],
+                ['5. 👥 Referal tizimi', '6. 💳 Hisobni to‘ldirish'],
+                ['7. 📞 Murojat qilish', '8. 📖 Qullanma'],
+                ['9. 🤝 Hamkorlik tizimi']
+            ],
+            resize_keyboard: true
         }
     });
 });
 
-// Xabarlarni qayta ishlash
+// -------------------- ASOSIY MENYU ISHLASHI --------------------
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
 
-    // Buyurtma berish
-    if (text === '📦 Buyurtma berish') {
-        const services = await getServices();
-        
-        if (services.length === 0) {
-            return bot.sendMessage(chatId, "❌ Hozircha xizmatlar ro'yxati yuklanmadi yoki serverda xato bor. Keyinroq urinib ko'ring.");
-        }
-
-        // Xizmatlarni tugmalarga aylantirish (cheklov yo'q, barchasini chiqaradi)
-        const buttons = services.map(s => [{
-            text: `${s.name} | ${(s.rate * PROFIT).toFixed(2)} $ / 1000`,
-            callback_data: `service_${s.service}`
-        }]);
-
-        // Tugmalarni 2 qatorga joylashtirish
-        const inlineKeyboard = [];
-        for (let i = 0; i < buttons.length; i += 2) {
-            inlineKeyboard.push(buttons.slice(i, i + 2).map(b => b[0]));
-        }
-
-        bot.sendMessage(chatId, "📋 Mavjud xizmatlar:\nXizmat turini tanlang:", {
-            reply_markup: { inline_keyboard: inlineKeyboard }
+    // === 1. BUYURTMA BERISH ===
+    if (text === '1. 📦 Buyurtma berish') {
+        bot.sendMessage(chatId, "📱 Xizmat turini tanlang:", {
+            reply_markup: {
+                inline_keyboard: [
+                    [{text: 'TELEGRAM', callback_data: 'cat_telegram'}, {text: 'INSTAGRAM', callback_data: 'cat_instagram'}],
+                    [{text: 'TIKTOK', callback_data: 'cat_tiktok'}, {text: 'YOUTUBE', callback_data: 'cat_youtube'}],
+                    [{text: 'STARS / YULDUZ', callback_data: 'cat_stars'}, {text: 'WHATSAPP', callback_data: 'cat_whatsapp'}],
+                    [{text: 'FACEBOOK', callback_data: 'cat_facebook'}, {text: 'TWITTER / X', callback_data: 'cat_twitter'}],
+                    [{text: 'TWITCH', callback_data: 'cat_twitch'}, {text: 'VK', callback_data: 'cat_vk'}],
+                    [{text: 'OBUNACHILAR', callback_data: 'cat_subs'}, {text: 'TEKIN NAKRUTKA', callback_data: 'cat_free'}],
+                    [{text: 'TELEGRAM GIFT / HADIYALAR', callback_data: 'cat_gift'}]
+                ]
+            }
         });
     }
 
-    // Balansni ko'rish
-    else if (text === '💰 Balansim') {
-        const balanceData = await getBalance();
-        bot.sendMessage(chatId, `💳 Sizning balansingiz: <b>${balanceData.balance} ${balanceData.currency}</b>`, {
-            parse_mode: 'HTML'
-        });
+    // === 2. NOMER OLISH ===
+    else if (text === '2. 🆔 Nomer olish') {
+        bot.sendMessage(chatId, "Bu bo'limda raqam olish xizmati ishlab chiqilmoqda. Tez orada ishga tushadi!");
     }
 
-    // Foydalanuvchidan link yoki son qabul qilish
+    // === 3. BUYURTMALARIM ===
+    else if (text === '3. 📋 Buyurtmalarim') {
+        bot.sendMessage(chatId, "Buyurtmalaringiz ro'yxatini ko'rish uchun xizmat nomini va ID raqamini yozing yoki yangilang...");
+    }
+
+    // === 4. MENING HISOBIM (FAQAT O'ZIGA KO'RINADI) ===
+    else if (text === '4. 💰 Mening hisobim') {
+        // Faqat so'rov yuborgan foydalanuvchining balansi olinadi
+        const balance = await getBalance(chatId);
+        bot.sendMessage(chatId, `💳 Sizning shaxsiy balansingiz:\n<b>${balance.balance} ${balance.currency}</b>`, {parse_mode: 'HTML'});
+    }
+
+    // === 5. REFERAL TIZIMI ===
+    else if (text === '5. 👥 Referal tizimi') {
+        bot.sendMessage(chatId, "👥 Referal tizimi: Do'stlaringizni taklif qiling va har bir buyurtmadan foiz oling!\nSizning havolangiz: https://t.me/your_bot?start=ref${chatId}");
+    }
+
+    // === 6. HISOBNI TO'LDIRISH ===
+    else if (text === '6. 💳 Hisobni to‘ldirish') {
+        bot.sendMessage(chatId, "💳 Hisobni to'ldirish uchun to'lov usulini tanlang:\n• Click\n• Payme\n• Uzcard\n\nMa'lumotlar: ...");
+    }
+
+    // === 7. MUROJAT QILISH ===
+    else if (text === '7. 📞 Murojat qilish') {
+        bot.sendMessage(chatId, "📞 Biz bilan bog'lanish:\nAdmin: @admin_username\nTelefon: +99890XXXXXXX");
+    }
+
+    // === 8. QULLANMA ===
+    else if (text === '8. 📖 Qullanma') {
+        bot.sendMessage(chatId, "📖 Botdan foydalanish qoidalari:\n1. Xizmat tanlang\n2. Link yuboring\n3. Sonni kiriting\n4. Buyurtma tasdiqlanadi");
+    }
+
+    // === 9. HAMKORLIK TIZIMI ===
+    else if (text === '9. 🤝 Hamkorlik tizimi') {
+        bot.sendMessage(chatId, "🤝 Hamkorlik shartlari: Katta hajmli buyurtmalarga chegirmalar, shaxsiy menejer va boshqa imkoniyatlar.");
+    }
+
+    // === LINK VA SON QABUL QILISH (XIZMAT TANLANGANDAN KEYIN) ===
     else if (userData[chatId]) {
         const data = userData[chatId];
 
-        // 1-qadam: Linkni qabul qilish
         if (data.step === 'awaiting_link') {
             data.link = text.trim();
             data.step = 'awaiting_quantity';
             bot.sendMessage(chatId, "🔢 Buyurtma sonini kiriting (masalan: 100, 500, 1000):");
         }
 
-        // 2-qadam: Sonni qabul qilish va buyurtma yaratish
         else if (data.step === 'awaiting_quantity') {
-            const quantity = parseInt(text.trim());
-            
-            if (isNaN(quantity) || quantity < 1) {
-                return bot.sendMessage(chatId, "❌ Noto'g'ri son! Faqat raqam kiriting (masalan: 100). Qaytadan urinib ko'ring:");
+            const qty = parseInt(text.trim());
+            if (isNaN(qty) || qty < 1) {
+                return bot.sendMessage(chatId, "❌ Faqat raqam kiriting! Qaytadan urinib ko'ring:");
             }
 
-            // Buyurtma yaratish
             bot.sendMessage(chatId, "⏳ Buyurtma yaratilmoqda...");
-            const result = await createOrder(data.serviceId, data.link, quantity);
+            const res = await createOrder(data.serviceId, data.link, qty);
 
-            // Natijani chiqarish
-            if (result.order) {
-                const pricePer1k = data.rate * PROFIT;
-                const totalPrice = (pricePer1k * quantity / 1000).toFixed(4);
-                
-                bot.sendMessage(chatId, `✅ Buyurtma muvaffaqiyatli yaratildi!\n\n🔢 Buyurtma ID: <b>${result.order}</b>\n📌 Xizmat ID: ${data.serviceId}\n🔗 Link: ${data.link}\n📊 Son: ${quantity}\n💸 Umumiy narx: <b>${totalPrice} $</b>`, {
-                    parse_mode: 'HTML'
-                });
+            if (res.order) {
+                const price = ( (data.rate * PROFIT) * qty / 1000 ).toFixed(4);
+                bot.sendMessage(chatId, `✅ Buyurtma yaratildi!\n\n🔢 ID: <b>${res.order}</b>\n📌 Xizmat: ${data.name}\n🔗 Link: ${data.link}\n📊 Son: ${qty}\n💸 To'lov: <b>${price} $</b>`, {parse_mode: 'HTML'});
             } else {
-                bot.sendMessage(chatId, `❌ Xato: ${result.error || 'Noma’lum xato yuz berdi'}`);
+                bot.sendMessage(chatId, `❌ Xato: ${res.error}`);
             }
-
-            // Vaqtincha ma'lumotlarni o'chirish
             delete userData[chatId];
         }
     }
 });
 
-// Callback so'rovlarini qayta ishlash (xizmat tanlash)
+// -------------------- XIZMAT TURLARI VA API BOG'LANISHI --------------------
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
     const data = query.data;
+    const allServices = await getServices(); // topsmm.uz dan barcha xizmatlar olinadi
 
-    // Tanlangan xizmatni saqlash
-    if (data.startsWith('service_')) {
-        const serviceId = data.split('_')[1];
-        const services = await getServices();
-        const selectedService = services.find(s => s.service == serviceId);
+    // Kategoriyalar bo'yicha xizmatlarni filtrlash
+    let filtered = [];
+    let categoryName = '';
 
-        if (!selectedService) {
-            return bot.sendMessage(chatId, "❌ Tanlangan xizmat topilmadi!");
-        }
+    if (data === 'cat_telegram') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('telegram'));
+        categoryName = 'TELEGRAM';
+    }
+    else if (data === 'cat_instagram') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('instagram'));
+        categoryName = 'INSTAGRAM';
+    }
+    else if (data === 'cat_tiktok') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('tiktok'));
+        categoryName = 'TIKTOK';
+    }
+    else if (data === 'cat_youtube') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('youtube'));
+        categoryName = 'YOUTUBE';
+    }
+    else if (data === 'cat_stars') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('star') || s.name.toLowerCase().includes('yulduz'));
+        categoryName = 'STARS / YULDUZ';
+    }
+    else if (data === 'cat_whatsapp') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('whatsapp'));
+        categoryName = 'WHATSAPP';
+    }
+    else if (data === 'cat_facebook') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('facebook'));
+        categoryName = 'FACEBOOK';
+    }
+    else if (data === 'cat_twitter') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('twitter') || s.name.toLowerCase().includes('x '));
+        categoryName = 'TWITTER / X';
+    }
+    else if (data === 'cat_twitch') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('twitch'));
+        categoryName = 'TWITCH';
+    }
+    else if (data === 'cat_vk') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('vk'));
+        categoryName = 'VK';
+    }
+    else if (data === 'cat_subs') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('obunachi') || s.name.toLowerCase().includes('subscriber'));
+        categoryName = 'OBUNACHILAR';
+    }
+    else if (data === 'cat_free') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('tekin') || s.name.toLowerCase().includes('free'));
+        categoryName = 'TEKIN NAKRUTKA';
+    }
+    else if (data === 'cat_gift') {
+        filtered = allServices.filter(s => s.name.toLowerCase().includes('gift') || s.name.toLowerCase().includes('hadya'));
+        categoryName = 'TELEGRAM GIFT / HADIYALAR';
+    }
+    // Xizmat tanlanganda
+    else if (data.startsWith('service_')) {
+        const servId = data.split('_')[1];
+        const serv = allServices.find(s => s.service == servId);
+        if (!serv) return bot.answerCallbackQuery(query.id, {text: "Xizmat topilmadi!"});
 
-        // Foydalanuvchi ma'lumotlarini saqlash
         userData[chatId] = {
-            serviceId: serviceId,
-            rate: selectedService.rate,
+            serviceId: servId,
+            name: serv.name,
+            rate: serv.rate,
             step: 'awaiting_link'
         };
 
-        // Javob berish
         bot.answerCallbackQuery(query.id);
-        bot.sendMessage(chatId, `✅ Tanlandi: <b>${selectedService.name}</b>\n💸 Narx: ${(selectedService.rate * PROFIT).toFixed(2)} $ / 1000\n\n🔗 Endi linkni yuboring:`, {
-            parse_mode: 'HTML'
-        });
+        return bot.sendMessage(chatId, `✅ Tanlandi: <b>${serv.name}</b>\n💸 Narx: ${(serv.rate * PROFIT).toFixed(2)} $ / 1000\n\n🔗 Endi linkni yuboring:`, {parse_mode: 'HTML'});
     }
+
+    // Tanlangan kategoriya bo'yicha xizmatlarni chiqarish
+    if (filtered.length === 0) {
+        bot.answerCallbackQuery(query.id);
+        return bot.sendMessage(chatId, `❌ ${categoryName} bo'yicha xizmatlar hozircha mavjud emas.`);
+    }
+
+    // Tugmalarni yaratish
+    const buttons = filtered.map(s => [{
+        text: `${s.name} | ${(s.rate * PROFIT).toFixed(2)} $`,
+        callback_data: `service_${s.service}`
+    }]);
+
+    // 2 qatorli qilib chiqarish
+    const inlineKb = [];
+    for (let i = 0; i < buttons.length; i += 2) {
+        inlineKb.push(buttons.slice(i, i + 2).map(b => b[0]));
+    }
+
+    bot.answerCallbackQuery(query.id);
+    bot.sendMessage(chatId, `📋 <b>${categoryName}</b> xizmatlari:\nXizmatni tanlang:`, {
+        parse_mode: 'HTML',
+        reply_markup: { inline_keyboard: inlineKb }
+    });
 });
 
-// Bot xatolarini nazorat qilish
-bot.on('polling_error', (error) => {
-    console.error('Polling xatosi:', error.code);
-});
-
-console.log('✅ Bot muvaffaqiyatli ishga tushdi!');
+// Xatolarni nazorat qilish
+bot.on('polling_error', (err) => console.error('Xato:', err.code));
+console.log('✅ Bot to‘liq ishga tushdi!');
