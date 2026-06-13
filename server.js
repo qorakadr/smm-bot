@@ -1,3 +1,9 @@
+process.on('uncaughtException', (err) => {
+    console.error('Kutilmagan xatolik:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Promise xatosi:', reason);
+});
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 
