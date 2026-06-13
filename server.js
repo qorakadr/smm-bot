@@ -4,7 +4,7 @@ const axios = require('axios');
 const mongoose = require('mongoose'); // MongoDB drayveri qo'shildi
 
 // 🍃 MONGODB ULANISH HAVOLASI (Siz yaratgan baza)
-const MONGO_URI = "mongodb+srv://odilbek90:mutRjmtuog5CwbLD@cluster0.dzhhdpf.mongodb.net/smm_database?retryWrites=true&w=majority";
+const MONGO_URI = "mongodb+srv://Odil014:mutRjmtuog5CwbLD@cluster0.dzhhdpf.mongodb.net/smm_database?retryWrites=true&w=majority";
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log("🍃 MongoDB Ma'lumotlar bazasiga muvaffaqiyatli ulandi! ✅"))
